@@ -25,8 +25,7 @@ pub extern "C" fn panic_fmt() -> ! {
 
 #[no_mangle]
 pub unsafe extern "C" fn kmain() {
-  
-  /*
+    /*
     let mut pin = Gpio::new(16).as_output();
     loop {
         spin_sleep_millis(1000);
@@ -36,9 +35,9 @@ pub unsafe extern "C" fn kmain() {
     }
     */
 
-    let mut uart = Uart::new()    ;
+    let mut uart = Uart::new();
     loop {
-        spin_sleep_millis(5000);
+        // spin_sleep_millis(5000);
         uart.write_byte('a' as u8);
     }
 }

@@ -9,9 +9,10 @@ extern crate volatile;
 mod common;
 mod gpio;
 mod timer;
-use common::{GPIO_CLR0, GPIO_FSEL1, GPIO_SET0};
+mod uart;
 use gpio::*;
 use timer::spin_sleep_millis;
+use uart::Uart;
 
 #[lang = "eh_personality"]
 pub extern "C" fn eh_personality() {}
@@ -21,23 +22,23 @@ pub extern "C" fn eh_personality() {}
 pub extern "C" fn panic_fmt() -> ! {
     loop {}
 }
+
 #[no_mangle]
 pub unsafe extern "C" fn kmain() {
-    /*
-    GPIO_FSEL1.write_volatile(0b001 << 18);
-
-    loop {
-        GPIO_SET0.write_volatile(0b1 << 16);
-        spin_sleep_ms(1000);
-        GPIO_CLR0.write_volatile(0b1 << 16);
-        spin_sleep_ms(1000);
-    }
-*/
-    let mut pin = Gpio::new(16).into_output();
+  
+  /*
+    let mut pin = Gpio::new(16).as_output();
     loop {
         spin_sleep_millis(1000);
         pin.set();
         spin_sleep_millis(1000);
         pin.clear();
+    }
+    */
+
+    let mut uart = Uart::new()    ;
+    loop {
+        spin_sleep_millis(5000);
+        uart.write_byte('a' as u8);
     }
 }

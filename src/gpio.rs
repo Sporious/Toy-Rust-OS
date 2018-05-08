@@ -12,7 +12,7 @@ enum FunctionSelectMask {
     AF4 = 0b011,
     AF5 = 0b010,
 }
-pub struct AltFunction(u8);
+pub struct AltFunction(pub u8);
 
 impl Into<FunctionSelectMask> for AltFunction {
     fn into(self) -> FunctionSelectMask {
@@ -93,15 +93,15 @@ impl Gpio<Uninitialised> {
         }
     }
 
-    pub fn into_output(mut self) -> Gpio<Output> {
+    pub fn as_output(mut self) -> Gpio<Output> {
         self.update_pin_fsel(FunctionSelectMask::Output);
         self.transition()
     }
-    pub fn into_input(mut self) -> Gpio<Input> {
+    pub fn as_input(mut self) -> Gpio<Input> {
         self.update_pin_fsel(FunctionSelectMask::Input);
         self.transition()
     }
-    pub fn into_alt<T: Into<FunctionSelectMask>>(mut self, f: T) -> Gpio<Alt> {
+    pub fn as_alt<T: Into<FunctionSelectMask>>(mut self, f: T) -> Gpio<Alt> {
         self.update_pin_fsel(f.into());
         self.transition()
     }

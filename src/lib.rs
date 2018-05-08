@@ -36,8 +36,17 @@ pub unsafe extern "C" fn kmain() {
     */
 
     let mut uart = Uart::new();
+    /*
     loop {
         // spin_sleep_millis(5000);
         uart.write_byte('a' as u8);
+    }
+    */
+
+    loop {
+        if uart.has_byte() {
+            let c = uart.read_byte();
+            uart.write_byte(c);
+        }
     }
 }

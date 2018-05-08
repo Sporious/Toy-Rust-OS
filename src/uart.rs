@@ -73,7 +73,8 @@ impl Uart {
         //unimplemented!()
     }
     pub fn has_byte(&self) -> bool {
-        unimplemented!()
+       self.registers.MU_LSR_REG.read() & (1 << 0) == 1
+       // unimplemented!()
     }
 
     pub fn wait_for_byte(&self) -> Result<(), ()> {
@@ -81,6 +82,6 @@ impl Uart {
     }
 
     pub fn read_byte(&mut self) -> u8 {
-        unimplemented!()
+        self.registers.MU_IO_REG.read()
     }
 }

@@ -7,19 +7,11 @@
 extern crate rlibc;
 extern crate volatile;
 mod common;
-mod timer;
 mod gpio;
-use gpio::*;
+mod timer;
 use common::{GPIO_CLR0, GPIO_FSEL1, GPIO_SET0};
-
-#[inline(never)]
-fn spin_sleep_ms(ms: usize) {
-    for _ in 0..(ms * 600) {
-        unsafe {
-            asm!("nop" :::: "volatile");
-        }
-    }
-}
+use gpio::*;
+use timer::spin_sleep_millis;
 
 #[lang = "eh_personality"]
 pub extern "C" fn eh_personality() {}
@@ -31,6 +23,7 @@ pub extern "C" fn panic_fmt() -> ! {
 }
 #[no_mangle]
 pub unsafe extern "C" fn kmain() {
+    /*
     GPIO_FSEL1.write_volatile(0b001 << 18);
 
     loop {
@@ -39,14 +32,12 @@ pub unsafe extern "C" fn kmain() {
         GPIO_CLR0.write_volatile(0b1 << 16);
         spin_sleep_ms(1000);
     }
-
-    let mut pin = Gpio::new(16).into_output();     
+*/
+    let mut pin = Gpio::new(16).into_output();
     loop {
+        spin_sleep_millis(1000);
         pin.set();
-        spin_sleep_ms(1000);
+        spin_sleep_millis(1000);
         pin.clear();
-        spin_sleep_ms(1000);
     }
-
-
 }

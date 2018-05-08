@@ -66,6 +66,7 @@ $(KERNEL).bin: $(KERNEL).elf | $(BUILD_DIR)
 	@echo "+ Building $@ [objcopy $<]"
 	@$(CROSS)-objcopy $< -O binary $@
 
+
 clean:
 	$(XARGO) clean
 	rm -rf $(BUILD_DIR)

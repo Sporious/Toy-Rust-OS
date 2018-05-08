@@ -1,10 +1,8 @@
 use common::GPIO_BASE;
 use core::marker::PhantomData;
-use volatile::{ ReadOnly, WriteOnly, ReadWrite};
+use volatile::{ReadOnly, ReadWrite, WriteOnly};
 
-
-enum FunctionSelectMask
-{
+enum FunctionSelectMask {
     Input = 0b000,
     Output = 0b001,
     AF0 = 0b100,
@@ -25,12 +23,10 @@ impl Into<FunctionSelectMask> for AltFunction {
             3 => FunctionSelectMask::AF3,
             4 => FunctionSelectMask::AF4,
             5 => FunctionSelectMask::AF5,
-            _ => panic!()
+            _ => panic!(),
         }
-
     }
 }
-
 
 /*
     Layout for this struct can be found on page 90
@@ -38,100 +34,98 @@ impl Into<FunctionSelectMask> for AltFunction {
 #[repr(C)]
 #[allow(non_snake_case)]
 struct Registers {
-    FSEL: [ReadWrite<u32>;6], // 0000 -> 0018; 6 Function select 32 bits (R/W)
-    _a: u32, //0018 -> 001C reserved
-    SET: [WriteOnly<u32>;2], //001C -> 0024; 2 function set 32 bits(W)
+    FSEL: [ReadWrite<u32>; 6], // 0000 -> 0018; 6 Function select 32 bits (R/W)
+    _a: u32,                   //0018 -> 001C reserved
+    SET: [WriteOnly<u32>; 2],  //001C -> 0024; 2 function set 32 bits(W)
     _b: u32,
-    CLR: [WriteOnly<u32>;2], //Clear
-    _c : u32,
-    LEV : [ReadOnly<u32>;2], //Level
+    CLR: [WriteOnly<u32>; 2], //Clear
+    _c: u32,
+    LEV: [ReadOnly<u32>; 2], //Level
     _d: u32,
-    EDS: [ReadWrite<u32>;2], //Event detect status
+    EDS: [ReadWrite<u32>; 2], //Event detect status
     _e: u32,
-    REN: [ReadWrite<u32>;2], //Rising edge detect status
+    REN: [ReadWrite<u32>; 2], //Rising edge detect status
     _f: u32,
-    FEN: [ReadWrite<u32>;2], //Falling edge detect status
+    FEN: [ReadWrite<u32>; 2], //Falling edge detect status
     _g: u32,
-    HEN: [ReadWrite<u32>;2], //High detect enable
+    HEN: [ReadWrite<u32>; 2], //High detect enable
     _h: u32,
-    LEN: [ReadWrite<u32>;2], //Low detect enable
+    LEN: [ReadWrite<u32>; 2], //Low detect enable
     _i: u32,
-    AREN: [ReadWrite<u32>;2], //Async rising edge detect
+    AREN: [ReadWrite<u32>; 2], //Async rising edge detect
     _j: u32,
-    AFEN: [ReadWrite<u32>;2], //Async falling edge detect
+    AFEN: [ReadWrite<u32>; 2], //Async falling edge detect
     _k: u32,
-    PUD: ReadWrite<u32>, //pull-up/down enable
-    PUDCLK: [ReadWrite<u32>;2], //pull-up/down enable clock
-   }
+    PUD: ReadWrite<u32>,         //pull-up/down enable
+    PUDCLK: [ReadWrite<u32>; 2], //pull-up/down enable clock
+}
 
 pub enum Uninitialised {}
 pub enum Input {}
 pub enum Output {}
-pub enum Alt {}    
+pub enum Alt {}
 
 pub struct Gpio<State> {
-        pin: u8,
-        registers: &'static mut Registers,
-        _phantom: PhantomData<State>,
+    pin: u8,
+    registers: &'static mut Registers,
+    _phantom: PhantomData<State>,
 }
-impl <T> Gpio <T> {
+impl<T> Gpio<T> {
     fn transition<S>(self) -> Gpio<S> {
         Gpio {
             pin: self.pin,
             registers: self.registers,
-            _phantom: PhantomData
+            _phantom: PhantomData,
         }
     }
 }
 
 impl Gpio<Uninitialised> {
-    pub fn new( pin: u8 ) -> Gpio<Uninitialised> {
+    pub fn new(pin: u8) -> Gpio<Uninitialised> {
         if pin > 53 {
             panic!()
         }
-        
+
         Gpio {
-            registers: unsafe { &mut *(GPIO_BASE as *mut Registers)},
+            registers: unsafe { &mut *(GPIO_BASE as *mut Registers) },
             pin: pin,
             _phantom: PhantomData,
         }
     }
 
-
     pub fn into_output(mut self) -> Gpio<Output> {
         self.update_pin_fsel(FunctionSelectMask::Output);
-       self.transition()
+        self.transition()
     }
     pub fn into_input(mut self) -> Gpio<Input> {
         self.update_pin_fsel(FunctionSelectMask::Input);
         self.transition()
     }
-    pub fn into_alt<T: Into<FunctionSelectMask>>(mut self, f: T ) -> Gpio<Alt> {
+    pub fn into_alt<T: Into<FunctionSelectMask>>(mut self, f: T) -> Gpio<Alt> {
         self.update_pin_fsel(f.into());
-         self.transition()
+        self.transition()
     }
 
-
-    fn update_pin_fsel( &mut self, f: FunctionSelectMask ) {
+    fn update_pin_fsel(&mut self, f: FunctionSelectMask) {
         let fsel_mumber = self.pin / 10;
-        let pin_offset = (self.pin % 10 ) * 3;
+        let pin_offset = (self.pin % 10) * 3;
         {
-            let   fsel =  &mut self.registers.FSEL[fsel_mumber as usize];
+            let fsel = &mut self.registers.FSEL[fsel_mumber as usize];
             let old = fsel.read();
-            fsel.write( ( (f as u32) << (pin_offset) ) | old );
-        }        
+            fsel.write(((f as u32) << (pin_offset)) | old);
+        }
     }
 }
 impl Gpio<Output> {
     pub fn set(&mut self) {
         let set_number = self.pin / 32;
         let pin_offset = self.pin % 32;
-        self.registers.SET[set_number as usize].write( 0b1 << (31 - pin_offset));
+        self.registers.SET[set_number as usize].write(0b1 << pin_offset);
     }
     pub fn clear(&mut self) {
         let set_number = self.pin / 32;
         let pin_offset = self.pin % 32;
-        self.registers.CLR[set_number as usize].write( 0b1 << (31 - pin_offset));
+        self.registers.CLR[set_number as usize].write(0b1 << pin_offset);
     }
 }
 
@@ -141,38 +135,8 @@ impl Gpio<Input> {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*
 
 
 
 */
-

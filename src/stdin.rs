@@ -43,6 +43,10 @@ impl<'a> Stdin<'a> {
             position: 0,
         }
     }
+    pub fn clear(&mut self) {
+        self.stdinback.backing = [0;1000];
+        self.position = 0;
+    }
    pub  fn push<T: Into<u8>>(&mut self, c: T) -> Result< (), () > {
         if self.position >= (self.stdinback.backing.len() - 1)
         {

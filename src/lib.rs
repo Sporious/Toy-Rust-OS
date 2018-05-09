@@ -15,6 +15,7 @@ use gpio::*;
 use timer::spin_sleep_millis;
 use uart::Uart;
 use stdin::stdin;
+use core::fmt::Write;
 
 
 #[lang = "eh_personality"]
@@ -29,26 +30,19 @@ pub extern "C" fn panic_fmt() -> ! {
 #[no_mangle]
 pub unsafe extern "C" fn kmain() {
 
-    let mut stdin = stdin().unwrap();
-    stdin.push('a' as u8).unwrap();
-    stdin.push('b' as u8).unwrap();
-    stdin.push('c' as u8).unwrap();
     let mut uart = Uart::new();
-    /*
+    let mut stdin = stdin().unwrap();
     loop {
-        
-        if uart.has_byte() {
-            let c = uart.read_byte();
-            uart.write_byte(c);
+        if uart.has_byte( ) {
+            let byte = uart.read_byte();
+            if byte >= 97 && byte<=122 {
+                stdin.push(byte).unwrap();
+            } 
         }
-    }
-    */
 
-    loop {
-        for c in &stdin {
-            uart.write_byte(*c);
+        if (&stdin).into_iter().count() >= 5 {
+            uart.write_str("Hit 5, resetting \r\n");
+            stdin.clear();
         }
-        uart.write_byte('\r' as u8);
-        uart.write_byte('\n' as u8);
     }
 }

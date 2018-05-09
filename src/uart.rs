@@ -2,12 +2,7 @@ use gpio::{AltFunction, Gpio};
 use volatile::{ReadOnly, ReadWrite, Volatile, WriteOnly};
 //use common::{IO_BASE, GPIO_BASE};
 use common::{AUX_ENABLES, MU_REG_BASE};
-
-#[repr(u8)]
-enum LsrStatus {
-    DataReady = 1,
-    TxAvailable = 1 << 5,
-}
+use core::fmt;
 
 #[repr(C)]
 #[allow(non_snake_case)]
@@ -34,6 +29,7 @@ struct Registers {
     MU_BAUD_REG: ReadWrite<u16>,
     _j: [u8; 2],
 }
+
 
 pub struct Uart {
     registers: &'static mut Registers,
@@ -70,18 +66,22 @@ impl Uart {
     pub fn write_byte(&mut self, b: u8) {
         while self.registers.MU_LSR_REG.read() & (1 << 5) == 0 {}
         self.registers.MU_IO_REG.write(b);
-        //unimplemented!()
     }
     pub fn has_byte(&self) -> bool {
        self.registers.MU_LSR_REG.read() & (1 << 0) == 1
        // unimplemented!()
     }
 
-    pub fn wait_for_byte(&self) -> Result<(), ()> {
-        unimplemented!()
-    }
-
     pub fn read_byte(&mut self) -> u8 {
         self.registers.MU_IO_REG.read()
+    }
+}
+
+impl fmt::Write for Uart {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        for i in s.chars() {
+            self.write_byte(i as u8)
+        }
+        Ok(())
     }
 }

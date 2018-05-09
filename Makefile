@@ -16,14 +16,17 @@ EXT_DEPS = $(BUILD_DIR)/crt0.o
 
 BUILD_DIR := build
 KERNEL := $(BUILD_DIR)/$(RUST_BINARY)
+IMAGE := $(BUILD_DIR)/kernel8.img
 RUST_LIB := $(BUILD_DIR)/$(RUST_BINARY).a
 
 .PHONY: all clean check
 
 VPATH = ext
 
-all: $(KERNEL).hex $(KERNEL).bin
+all: clean start  done
 
+start:
+	@echo "Starting"
 check:
 	@$(XARGO) check --target=$(TARGET)
 
@@ -43,29 +46,29 @@ $(RUST_LIB): $(RUST_RELEASE_LIB) | $(BUILD_DIR)
 	@cp $< $@
 endif
 
-$(BUILD_DIR):
+$(BUILD_DIR): start
 	@mkdir -p $@
 
 $(BUILD_DIR)/%.o: %.c | $(BUILD_DIR)
-	@echo "+ Building $@ [cc $<]"
 	@$(CC) $(CCFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/%.o: %.S | $(BUILD_DIR)
-	@echo "+ Building $@ [as $<]"
 	@$(CC) $(CCFLAGS) -c $< -o $@
 
 $(KERNEL).elf: $(EXT_DEPS) $(RUST_LIB) | $(BUILD_DIR)
-	@echo "+ Building $@ [ld $^]"
 	@$(CROSS)-ld --gc-sections -o $@ $^ -T$(LD_LAYOUT)
 
-$(KERNEL).hex: $(KERNEL).elf | $(BUILD_DIR)
-	@echo "+ Building $@ [objcopy $<]"
-	@$(CROSS)-objcopy $< -O ihex $@
-
 $(KERNEL).bin: $(KERNEL).elf | $(BUILD_DIR)
-	@echo "+ Building $@ [objcopy $<]"
 	@$(CROSS)-objcopy $< -O binary $@
+	
+$(IMAGE): $(KERNEL).bin | $(BUILD_DIR)
+	@mv $< $@
 
+clr: $(IMAGE) 
+	@rm  $(KERNEL).elf $(BUILD_DIR)/crt0.o $(BUILD_DIR)/rpi_os.a
+
+done: clr
+	@echo "Complete"
 
 clean:
 	$(XARGO) clean

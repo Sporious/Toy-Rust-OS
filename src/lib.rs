@@ -4,7 +4,6 @@
 //pub mod lang_items;
 //use core::ptr::{read_volatile, write_volatile};
 
-extern crate rlibc;
 extern crate volatile;
 mod common;
 mod gpio;

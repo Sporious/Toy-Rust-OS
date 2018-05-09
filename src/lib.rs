@@ -1,4 +1,4 @@
-#![feature(compiler_builtins_lib, lang_items, asm, pointer_methods)]
+#![feature(compiler_builtins_lib, lang_items, asm, pointer_methods, const_fn)]
 #![no_builtins]
 #![no_std]
 //pub mod lang_items;
@@ -10,9 +10,12 @@ mod common;
 mod gpio;
 mod timer;
 mod uart;
+mod stdin;
 use gpio::*;
 use timer::spin_sleep_millis;
 use uart::Uart;
+use stdin::stdin;
+
 
 #[lang = "eh_personality"]
 pub extern "C" fn eh_personality() {}
@@ -25,28 +28,27 @@ pub extern "C" fn panic_fmt() -> ! {
 
 #[no_mangle]
 pub unsafe extern "C" fn kmain() {
-    /*
-    let mut pin = Gpio::new(16).as_output();
-    loop {
-        spin_sleep_millis(1000);
-        pin.set();
-        spin_sleep_millis(1000);
-        pin.clear();
-    }
-    */
 
+    let mut stdin = stdin();
+    stdin.push('a' as u8).unwrap();
+    stdin.push('b' as u8).unwrap();
+    stdin.push('c' as u8).unwrap();
     let mut uart = Uart::new();
     /*
     loop {
-        // spin_sleep_millis(5000);
-        uart.write_byte('a' as u8);
-    }
-    */
-
-    loop {
+        
         if uart.has_byte() {
             let c = uart.read_byte();
             uart.write_byte(c);
         }
+    }
+    */
+
+    loop {
+        for c in &stdin {
+            uart.write_byte(*c);
+        }
+        uart.write_byte('\r' as u8);
+        uart.write_byte('\n' as u8);
     }
 }

@@ -32,17 +32,29 @@ pub unsafe extern "C" fn kmain() {
 
     let mut uart = Uart::new();
     let mut stdin = stdin().unwrap();
+    let mut pin = Gpio::new(16).as_output();
+    let mut pin_status = false;
     loop {
         if uart.has_byte( ) {
             let byte = uart.read_byte();
             if byte >= 97 && byte<=122 {
                 stdin.push(byte).unwrap();
             } 
+
+            if byte == 't' as u8 {
+                if pin_status {
+                    pin.clear();
+                    pin_status = false;
+                    uart.write_str("It's on!\r\n").unwrap();
+                }
+                else {
+                    pin.set();
+                    pin_status = true;
+                    uart.write_str("It's off!\r\n").unwrap();
+                }
+            }
         }
 
-        if (&stdin).into_iter().count() >= 5 {
-            uart.write_str("Hit 5, resetting \r\n");
-            stdin.clear();
-        }
+        
     }
 }

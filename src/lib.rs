@@ -29,7 +29,7 @@ pub extern "C" fn panic_fmt() -> ! {
 #[no_mangle]
 pub unsafe extern "C" fn kmain() {
 
-    let mut stdin = stdin();
+    let mut stdin = stdin().unwrap();
     stdin.push('a' as u8).unwrap();
     stdin.push('b' as u8).unwrap();
     stdin.push('c' as u8).unwrap();

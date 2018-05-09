@@ -1,6 +1,7 @@
 #![feature(compiler_builtins_lib, lang_items, asm, pointer_methods, const_fn)]
 #![no_builtins]
 #![no_std]
+
 //pub mod lang_items;
 //use core::ptr::{read_volatile, write_volatile};
 
@@ -11,6 +12,7 @@ mod stdin;
 mod timer;
 mod uart;
 use core::fmt::Write;
+use core::sync::atomic::AtomicBool;
 use gpio::*;
 use stdin::stdin;
 use timer::spin_sleep_millis;

@@ -60,7 +60,7 @@ impl<'a> Stdio<'a> {
         }
     }
     pub fn clear(&mut self) {
-        self.stdioback.backing = [0; 1000];
+        //self.stdioback.backing = [0; 1000];
         self.stdioback.cursor = 0;
     }
     pub fn push<T: Into<u8>>(&mut self, c: T) -> Result<(), ()> {

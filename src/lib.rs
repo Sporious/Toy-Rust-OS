@@ -14,7 +14,7 @@ mod uart;
 use core::fmt::Write;
 use core::sync::atomic::AtomicBool;
 use gpio::*;
-use stdio::{stdin, stdout };
+use stdio::{stdin, stdout};
 use timer::spin_sleep_millis;
 use uart::Uart;
 
@@ -35,18 +35,22 @@ pub unsafe extern "C" fn kmain() {
     let mut pin = Gpio::new(21).as_output();
     let mut pin_status = false;
     let mut k = 0;
+    let mut ch = 'a';
     loop {
-        stdout.write_char('a').unwrap();
-        if (&stdout).into_iter().count() >= k {
-            for &c in (&stdout).into_iter() {
-                uart.write_byte(c);
-            }
-            uart.write_str("\r\n").unwrap();
-            stdout.clear();
+        stdout.write_char(ch).unwrap();
+        for &c in stdout.into_iter() {
+            uart.write_byte(c);
         }
-        k+=1;
-        if k > 40 {
-            k = 0
+
+        k += 1;
+
+        if k == 30 {
+            k = 0;
+            if ch == 'z' {
+                ch = 'a';
+            } else {
+                ch = (ch as u8 + 1) as char
+            }
         }
     }
 }

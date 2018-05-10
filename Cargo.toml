@@ -22,4 +22,3 @@ debug = true
 
 [dependencies]
 volatile = "*"
-rlibc = "*"

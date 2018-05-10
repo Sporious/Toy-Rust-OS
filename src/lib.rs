@@ -30,20 +30,11 @@ pub extern "C" fn panic_fmt() -> ! {
 #[no_mangle]
 pub unsafe extern "C" fn kmain() {
     let mut uart = Uart::new();
-    let mut ch = 'a';
     loop {
-        stdout().unwrap().write_char(ch).unwrap();
-        for &c in stdout().unwrap().into_iter() {
-            uart.write_byte(c);
+        for _ in 0..4 {
+            stdout().unwrap().write_char('a').unwrap();
         }
-        uart.write_str("\r\n").unwrap();
-        if stdout().unwrap().len() > 70 {
-            stdout().unwrap().clear();
-            if ch == 'z' {
-                ch = 'a';
-            } else {
-                ch = (ch as u8 + 1) as char
-            }
-        }
+        stdout().unwrap().write_str("\r\n").unwrap();
+        uart.flush_stdout();
     }
 }

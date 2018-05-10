@@ -2,6 +2,7 @@ use common::{AUX_ENABLES, MU_REG_BASE};
 use core::fmt;
 use gpio::{AltFunction, Gpio};
 use volatile::{ReadOnly, ReadWrite, Volatile, WriteOnly};
+use stdio::{stdout, stdin};
 
 #[repr(C)]
 #[allow(non_snake_case)]
@@ -69,8 +70,21 @@ impl Uart {
         self.registers.MU_LSR_REG.read() & (1 << 0) == 1
     }
 
-    pub fn read_byte(&mut self) -> u8 {
+    pub fn read_byte(&self) -> u8 {
         self.registers.MU_IO_REG.read()
+    }
+
+    pub fn read_to_stdin(&self) {
+        let mut stdin = stdin().unwrap();
+        while self.has_byte() {
+            stdin.push( self.read_byte() ).unwrap();
+        }
+    }
+
+    pub fn flush_stdout(&mut self) {
+        let mut stdout = stdout().unwrap();
+        stdout.into_iter().for_each(|&x| self.write_byte(x) );
+        stdout.clear();
     }
 }
 

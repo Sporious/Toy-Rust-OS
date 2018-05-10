@@ -2,24 +2,23 @@ use core::fmt;
 use core::iter::{IntoIterator, Iterator};
 use core::ops::Drop;
 use core::slice::Iter;
-use core::sync::atomic::{AtomicBool, Ordering};
 
 pub static mut STDINBACK: StdioBack = StdioBack {
     backing: [0; 1000],
     cursor: 0,
-    guard_out: AtomicBool::new(false),
+    guard_out: false,
 };
 
 pub static mut STDOUTBACK: StdioBack = StdioBack {
     backing: [0; 1000],
     cursor: 0,
-    guard_out: AtomicBool::new(false),
+    guard_out: false,
 };
 
 pub struct StdioBack {
     backing: [u8; 1000],
     cursor: usize,
-    guard_out: AtomicBool,
+    guard_out: bool,
 }
 
 pub struct Stdio<'a> {
@@ -27,13 +26,13 @@ pub struct Stdio<'a> {
 }
 impl<'a> Drop for Stdio<'a> {
     fn drop(&mut self) {
-        self.stdioback.guard_out.store(false, Ordering::Relaxed);
+        self.stdioback.guard_out = false;
     }
 }
 
 pub fn stdin<'a>() -> Result<Stdio<'a>, ()> {
     unsafe {
-        match STDINBACK.guard_out.load(Ordering::Relaxed) {
+        match STDINBACK.guard_out {
             true => Err(()),
             false => Ok(Stdio::new(&mut STDINBACK)),
         }
@@ -41,7 +40,7 @@ pub fn stdin<'a>() -> Result<Stdio<'a>, ()> {
 }
 pub fn stdout<'a>() -> Result<Stdio<'a>, ()> {
     unsafe {
-        match STDOUTBACK.guard_out.load(Ordering::Relaxed) {
+        match STDOUTBACK.guard_out {
             true => Err(()),
             false => Ok(Stdio::new(&mut STDOUTBACK)),
         }
@@ -50,11 +49,11 @@ pub fn stdout<'a>() -> Result<Stdio<'a>, ()> {
 
 impl<'a> Stdio<'a> {
     fn new(stdioback: &mut StdioBack) -> Stdio {
-        stdioback.guard_out.store(true, Ordering::Relaxed);
+        stdioback.guard_out = true;
         Stdio { stdioback }
     }
     pub fn clear(&mut self) {
-        //self.stdioback.backing = [0; 1000];
+        self.stdioback.backing = [0; 1000];
         self.stdioback.cursor = 0;
     }
     pub fn push<T: Into<u8>>(&mut self, c: T) -> Result<(), ()> {

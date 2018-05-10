@@ -1,8 +1,8 @@
 use common::{AUX_ENABLES, MU_REG_BASE};
 use core::fmt;
 use gpio::{AltFunction, Gpio};
+use stdio::{stdin, stdout};
 use volatile::{ReadOnly, ReadWrite, Volatile, WriteOnly};
-use stdio::{stdout, stdin};
 
 #[repr(C)]
 #[allow(non_snake_case)]
@@ -44,7 +44,7 @@ impl Uart {
         };
 
         registers.MU_LCR_REG.write(0b11); //set datasize to 8 bit
-        registers.MU_BAUD_REG.write(270);
+        registers.MU_BAUD_REG.write(135);
         Gpio::new(14).as_alt(AltFunction(5));
         Gpio::new(15).as_alt(AltFunction(5));
         registers.MU_CNTL_REG.write(0b11); //Enable rx/tv
@@ -77,13 +77,13 @@ impl Uart {
     pub fn read_to_stdin(&self) {
         let mut stdin = stdin().unwrap();
         while self.has_byte() {
-            stdin.push( self.read_byte() ).unwrap();
+            stdin.push(self.read_byte()).unwrap();
         }
     }
 
     pub fn flush_stdout(&mut self) {
         let mut stdout = stdout().unwrap();
-        stdout.into_iter().for_each(|&x| self.write_byte(x) );
+        stdout.into_iter().for_each(|&x| self.write_byte(x));
         stdout.clear();
     }
 }

@@ -131,7 +131,7 @@ impl Gpio<Output> {
 
 impl Gpio<Input> {
     pub fn read_level(&mut self) -> bool {
-        unimplemented!()
+        self.registers.LEV[(self.pin / 32) as usize].read() & (0b1 << self.pin % 32) == 1
     }
 }
 

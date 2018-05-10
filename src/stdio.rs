@@ -27,7 +27,6 @@ pub struct Stdio<'a> {
 }
 impl<'a> Drop for Stdio<'a> {
     fn drop(&mut self) {
-        self.stdioback.backing = [0; 1000];
         self.stdioback.guard_out.store(false, Ordering::Relaxed);
     }
 }
@@ -67,6 +66,9 @@ impl<'a> Stdio<'a> {
                 Ok(())
             }
         }
+    }
+    pub fn len(&self) -> usize {
+        self.stdioback.cursor
     }
 }
 

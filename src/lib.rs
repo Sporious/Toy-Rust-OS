@@ -30,22 +30,15 @@ pub extern "C" fn panic_fmt() -> ! {
 #[no_mangle]
 pub unsafe extern "C" fn kmain() {
     let mut uart = Uart::new();
-    let mut stdin = stdin().unwrap();
-    let mut stdout = stdout().unwrap();
-    let mut pin = Gpio::new(21).as_output();
-    let mut pin_status = false;
-    let mut k = 0;
     let mut ch = 'a';
     loop {
-        stdout.write_char(ch).unwrap();
-        for &c in stdout.into_iter() {
+        stdout().unwrap().write_char(ch).unwrap();
+        for &c in stdout().unwrap().into_iter() {
             uart.write_byte(c);
         }
-
-        k += 1;
-
-        if k == 30 {
-            k = 0;
+        uart.write_str("\r\n").unwrap();
+        if stdout().unwrap().len() > 70 {
+            stdout().unwrap().clear();
             if ch == 'z' {
                 ch = 'a';
             } else {

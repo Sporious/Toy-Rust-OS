@@ -8,13 +8,13 @@
 extern crate volatile;
 mod common;
 mod gpio;
-mod stdin;
+mod stdio;
 mod timer;
 mod uart;
 use core::fmt::Write;
 use core::sync::atomic::AtomicBool;
 use gpio::*;
-use stdin::stdin;
+use stdio::{stdin, stdout };
 use timer::spin_sleep_millis;
 use uart::Uart;
 
@@ -31,26 +31,22 @@ pub extern "C" fn panic_fmt() -> ! {
 pub unsafe extern "C" fn kmain() {
     let mut uart = Uart::new();
     let mut stdin = stdin().unwrap();
+    let mut stdout = stdout().unwrap();
     let mut pin = Gpio::new(21).as_output();
     let mut pin_status = false;
+    let mut k = 0;
     loop {
-        if uart.has_byte() {
-            let byte = uart.read_byte();
-            if byte >= 97 && byte <= 122 {
-                stdin.push(byte).unwrap();
+        stdout.write_char('a').unwrap();
+        if (&stdout).into_iter().count() >= k {
+            for &c in (&stdout).into_iter() {
+                uart.write_byte(c);
             }
-
-            if byte == 't' as u8 {
-                if pin_status {
-                    pin.clear();
-                    pin_status = false;
-                    uart.write_str("ay It's off!\r\n").unwrap();
-                } else {
-                    pin.set();
-                    pin_status = true;
-                    uart.write_str("ay It's on!\r\n").unwrap();
-                }
-            }
+            uart.write_str("\r\n").unwrap();
+            stdout.clear();
+        }
+        k+=1;
+        if k > 40 {
+            k = 0
         }
     }
 }

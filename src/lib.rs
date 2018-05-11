@@ -39,7 +39,7 @@ pub extern "C" fn panic_fmt(args: core::fmt::Arguments, _: &(&'static str, u32))
 
 #[no_mangle]
 pub unsafe extern "C" fn kmain() {
-    let mut uart = Uart::new();
+    let mut uart = Uart::new().with_auto_flow_control();
 
     /*
     loop {

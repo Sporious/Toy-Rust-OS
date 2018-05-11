@@ -69,16 +69,20 @@ impl<'a> Stdio<'a> {
     pub fn len(&self) -> usize {
         self.stdioback.cursor
     }
+    pub fn as_slice(&self) -> &[u8] {
+            &self.stdioback.backing[..self.len()]
+    }
+    pub fn as_str(&self) -> &str {
+        use core::str::from_utf8;
+        from_utf8(self.as_slice()).expect("Failed to parse as slice")
+    }
 }
 
 impl<'a> IntoIterator for &'a Stdio<'a> {
     type Item = &'a u8;
     type IntoIter = Iter<'a, u8>;
     fn into_iter(self) -> Self::IntoIter {
-        match self.stdioback.cursor {
-            0 => [].into_iter(),
-            _ => self.stdioback.backing[0..self.stdioback.cursor].into_iter(),
-        }
+             self.stdioback.backing[..self.stdioback.cursor].into_iter()
     }
 }
 

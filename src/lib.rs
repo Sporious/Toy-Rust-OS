@@ -26,8 +26,15 @@ pub extern "C" fn eh_personality() {}
 
 #[lang = "panic_fmt"]
 #[no_mangle]
-pub extern "C" fn panic_fmt() -> ! {
-    loop {}
+pub extern "C" fn panic_fmt(args: core::fmt::Arguments, _: &(&'static str, u32)) -> ! {
+    let mut uart = Uart::new();
+    loop {
+        uart.set_bg_colour(BG_RED);
+        uart.set_fg_colour(FG_YELLOW);
+        uart.write_fmt(args).unwrap();
+        spin_sleep_millis(1000);
+        uart.clr();
+    }
 }
 
 #[no_mangle]
@@ -71,6 +78,7 @@ pub unsafe extern "C" fn kmain() {
     let mut pin = Gpio::new(21).as_output();
     let mut other_pin = Gpio::new(20).as_output();
     let mut on = false;
+
     loop {
         uart.set_fg_colour(FG_RED);
         uart.set_bg_colour(BG_GREEN);

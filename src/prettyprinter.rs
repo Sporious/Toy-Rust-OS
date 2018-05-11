@@ -2,7 +2,6 @@ use core::fmt::Write;
 use uart::Uart;
 
 pub const ESC: char = 27 as char;
-
 pub struct FgColour<'a>(&'a str);
 pub struct BgColour<'a>(&'a str);
 
@@ -17,7 +16,6 @@ pub const BG_BLACK: BgColour = BgColour("40");
 pub const BG_RED: BgColour = BgColour("41");
 pub const BG_GREEN: BgColour = BgColour("42");
 pub const BG_YELLOW: BgColour = BgColour("43");
-
 impl AnsiPrettyPrinter for Uart {}
 pub trait AnsiPrettyPrinter: Write {
     fn clr(&mut self) {

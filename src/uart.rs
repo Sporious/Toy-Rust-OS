@@ -57,7 +57,7 @@ impl Uart {
     pub fn with_auto_flow_control(self) -> Self {
         Gpio::new(16).as_alt(AltFunction(3));
         Gpio::new(17).as_alt(AltFunction(3));
-        self.registers.MU_CNTL_REG.write(0b1111);//Enable CTS|RTS|TX|RX pins
+        self.registers.MU_CNTL_REG.write(0b1011); //Enable CTS|RTS|TX|RX pins
         self
     }
     pub fn with_timeout(mut self, timeout: u32) -> Self {

@@ -47,7 +47,7 @@ impl Uart {
         registers.MU_BAUD_REG.write(135);
         Gpio::new(14).as_alt(AltFunction(5));
         Gpio::new(15).as_alt(AltFunction(5));
-        registers.MU_CNTL_REG.write(0b11); //Enable rx/tx
+        registers.MU_CNTL_REG.write(0b1111); //Enable CTS|RTS|TX|RX pins
 
         Uart {
             registers,

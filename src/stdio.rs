@@ -66,15 +66,28 @@ impl<'a> Stdio<'a> {
             }
         }
     }
+    pub fn pop(&mut self) -> Option<u8> {
+        match self.len() {
+            0 => None,
+            n @ _ => {
+                let out = Some(self.stdioback.backing[n]);
+                self.stdioback.cursor -= 1;
+                out
+            }
+        }
+    }
     pub fn len(&self) -> usize {
         self.stdioback.cursor
     }
     pub fn as_slice(&self) -> &[u8] {
         &self.stdioback.backing[..self.len()]
     }
-    pub fn as_str(&self) -> &str {
+    pub fn as_str(&self) -> Option<&str> {
         use core::str::from_utf8;
-        from_utf8(self.as_slice()).expect("Failed to parse as slice")
+        if self.len() < 1 {
+            return None;
+        }
+        Some(from_utf8(self.as_slice()).expect("Failed to parse as slice"))
     }
 }
 

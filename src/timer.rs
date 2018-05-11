@@ -35,7 +35,7 @@ pub fn current_time() -> u64 {
 }
 
 pub fn current_time_ms() -> u64 {
-    current_time()
+    current_time() / 1000
 }
 
 pub fn spin_sleep_micros(micros: u64) {

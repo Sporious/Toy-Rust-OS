@@ -57,7 +57,7 @@ impl<'a> Stdio<'a> {
         self.stdioback.cursor = 0;
     }
     pub fn push<T: Into<u8>>(&mut self, c: T) -> Result<(), ()> {
-        match self.stdioback.cursor >= (self.stdioback.backing.len() - 1) {
+        match self.stdioback.cursor + 1 >= (self.stdioback.backing.len()) {
             true => Err(()),
             false => {
                 self.stdioback.backing[self.stdioback.cursor] = c.into();
@@ -70,7 +70,7 @@ impl<'a> Stdio<'a> {
         self.stdioback.cursor
     }
     pub fn as_slice(&self) -> &[u8] {
-            &self.stdioback.backing[..self.len()]
+        &self.stdioback.backing[..self.len()]
     }
     pub fn as_str(&self) -> &str {
         use core::str::from_utf8;
@@ -82,7 +82,7 @@ impl<'a> IntoIterator for &'a Stdio<'a> {
     type Item = &'a u8;
     type IntoIter = Iter<'a, u8>;
     fn into_iter(self) -> Self::IntoIter {
-             self.stdioback.backing[..self.stdioback.cursor].into_iter()
+        self.stdioback.backing[..self.stdioback.cursor].into_iter()
     }
 }
 

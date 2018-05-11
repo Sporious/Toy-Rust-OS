@@ -38,19 +38,24 @@ pub extern "C" fn panic_fmt(args: core::fmt::Arguments, _: &(&'static str, u32))
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn kmain() 
-{
+pub unsafe extern "C" fn kmain() {
     let mut stdin = stdin().unwrap();
-    let mut uart = Uart::new();
+    let mut uart = Uart::new().with_auto_flow_control();
     let mut led1 = Gpio::new(20).as_output();
     let mut led2 = Gpio::new(21).as_output();
     loop {
         if uart.has_byte() {
             let byte = uart.read_byte();
-            stdin.push(byte).expect("Stdin full");
+            if stdin.push(byte).is_err() {
+                uart.write_str("    ").expect("A");
+                uart.write_fmt(format_args!("{}", stdin.len())).expect("B");
+                //uart.clr();
+            }
             uart.write_byte(byte);
+
+            uart.write_str(stdin.as_str());
             if !test_for_special_char(byte, &mut stdin, &mut uart) {
-                evaluate_stdin_buffer(&mut stdin, &mut led1, &mut led2);
+                evaluate_stdin_buffer(&mut stdin, &mut led1, &mut led2, &mut uart);
             }
         }
     }
@@ -61,20 +66,39 @@ fn test_for_special_char(byte: u8, stdin: &mut Stdio, uart: &mut Uart) -> bool {
         stdin.clear();
         uart.clr();
         true
-    }
-    else {
+    } else {
         false
     }
-
 }
 
-fn evaluate_stdin_buffer( stdin: &mut Stdio, led1: &mut Gpio<Output>, led2: &mut Gpio<Output>) {
-    
+fn evaluate_stdin_buffer(
+    stdin: &mut Stdio,
+    led1: &mut Gpio<Output>,
+    led2: &mut Gpio<Output>,
+    uart: &mut Uart,
+) {
+    /*
     match stdin.as_str() {
         "led1 on" => led1.set(),
         "led1 off" => led1.clear(),
         "led2 on" => led1.set(),
         "led2 off" => led2.clear(),
+        _ => {}
+    }
+    */
+    match stdin.as_str() {
+        "led1 on" => {
+            uart.write_str("command1");
+        }
+        "led1 off" => {
+            uart.write_str("command2");
+        }
+        "led2 on" => {
+            uart.write_str("command3");
+        }
+        "led2 off" => {
+            uart.write_str("command4");
+        }
         _ => {}
     }
 }

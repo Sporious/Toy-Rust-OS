@@ -44,7 +44,7 @@ impl Uart {
         };
 
         registers.MU_LCR_REG.write(0b11); //set datasize to 8 bit
-        registers.MU_BAUD_REG.write(135);
+        registers.MU_BAUD_REG.write(270);
         Gpio::new(14).as_alt(AltFunction(5));
         Gpio::new(15).as_alt(AltFunction(5));
         registers.MU_CNTL_REG.write(0b11); //Enable TX|RX pins
@@ -55,9 +55,9 @@ impl Uart {
         }
     }
     pub fn with_auto_flow_control(self) -> Self {
-        Gpio::new(16).as_alt(AltFunction(3));
-        Gpio::new(17).as_alt(AltFunction(3));
-        self.registers.MU_CNTL_REG.write(0b1011); //Enable CTS|RTS|TX|RX pins
+        Gpio::new(16).as_alt(AltFunction(5));
+        Gpio::new(17).as_alt(AltFunction(5));
+        self.registers.MU_CNTL_REG.write(0b11111111); //Enable TX|RX pins
         self
     }
     pub fn with_timeout(mut self, timeout: u32) -> Self {
